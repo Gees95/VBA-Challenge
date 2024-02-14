@@ -1,0 +1,132 @@
+Sub CalculateYearPercentChangeAndTotalVolumeforallsheets()
+   
+   ' Loop through each worksheet in the workbook
+    Dim ws As Worksheet
+    For Each ws In ThisWorkbook.Worksheets
+        ws.Activate
+        
+
+    Dim i, start, lastcount As Long
+    Dim change, percentChange, finalprice, intialPrice As Double
+    Dim totalVolume, highestincrease, highestvolume As Double
+    Dim highestdecreaseTicker As String
+    Dim highestvolumeTicker, highestincreaseTicker As String
+    Dim j As Integer
+    Dim highestdecrease, total As Double
+
+     
+    ' Set title rows
+    Range("I1").Value = "Ticker"
+    Range("J1").Value = "Year Change"
+    Range("K1").Value = "Percent Change"
+    Range("L1").Value = "Total Stock Volume"
+    
+    ' Initialize variables
+    start = 2
+    j = 0 ' To keep track of output row
+    highestincrease = 0
+    highestdecrease = 0
+    highestvolume = 0
+    
+    
+    ' Get the row number of the last row with data
+    lastrow = Cells(Rows.Count, "A").End(xlUp).Row
+    
+    ' Loop through each row
+    For i = 2 To lastrow
+        ' Accumulate total volume for the current ticker
+        totalVolume = totalVolume + Cells(i, 7).Value
+        
+        ' If ticker changes or it's the last row
+        If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+            ' Set the end price for the current ticker
+            finalprice = Cells(i, 6).Value
+            
+            ' Get start price for the ticker
+            intialPrice = Cells(start, 3).Value
+            
+            ' Calculate change from start to end
+            change = finalprice - intialPrice
+            
+            ' Calculate percent change
+            If intialPrice <> 0 Then
+                percentChange = (change / intialPrice)
+            Else
+                percentChange = 0
+            End If
+            
+            ' Output ticker, year change, percent change, and total volume
+            Range("I" & 2 + j).Value = Cells(i, 1).Value ' Ticker
+            Range("J" & 2 + j).Value = change
+            Range("J" & 2 + j).NumberFormat = "0.00"
+            Range("K" & 2 + j).Value = percentChange
+            Range("K" & 2 + j).NumberFormat = "0.00%"
+            Range("L" & 2 + j).Value = totalVolume
+            
+            ' Conditional formatting for year change
+            If change > 0 Then
+                Range("J" & 2 + j).Interior.Color = vbGreen
+            ElseIf change < 0 Then
+                Range("J" & 2 + j).Interior.Color = vbRed
+            Else
+                Range("J" & 2 + j).Interior.ColorIndex = xlNone
+            End If
+
+            ' Conditional formatting for percent change
+            If percentChange > 0 Then
+                Range("K" & 2 + j).Interior.Color = vbGreen
+            ElseIf percentChange < 0 Then
+                Range("K" & 2 + j).Interior.Color = vbRed
+            Else
+                Range("K" & 2 + j).Interior.ColorIndex = xlNone
+            End If
+            
+                ' Update greatest increase, decrease, and total volume
+            If percentChange > highestincrease Then
+                    highestincrease = percentChange
+                    highestincreaseTicker = Cells(i, 1).Value
+                ElseIf percentChange < highestdecrease Then
+                    highestdecrease = percentChange
+                    highestdecreaseTicker = Cells(i, 1).Value
+            
+            End If
+            If totalVolume > highestvolume Then
+                highestvolume = totalVolume
+                highestvolumeTicker = Cells(i, 1).Value
+            End If
+            ' Prepare for next ticker
+            start = i + 1
+            j = j + 1 ' Move to the next row for the next output
+            totalVolume = 0 ' Reset total volume for next ticker
+        End If
+            
+            
+    Next i
+    
+
+    ' After loop, output greatest increase, decrease, and volume
+    Range("P2").Value = highestincreaseTicker
+    Range("Q2").Value = highestincrease
+    Range("q2").NumberFormat = "0.00" & "%"
+    Range("P3").Value = highestdecreaseTicker
+    Range("Q3").Value = highestdecrease
+    Range("Q3").NumberFormat = "0.00" & "%"
+    Range("P4").Value = highestvolumeTicker
+    Range("Q4").Value = highestvolume
+    Range("q4").NumberFormat = "0"
+    
+    ' Set additional titles for clarity
+    Range("O2").Value = "Greatest % Increase"
+    Range("O3").Value = "Greatest % Decrease"
+    Range("O4").Value = "Greatest Total Volume"
+    Range("P1").Value = "Ticker"
+    Range("Q1").Value = "Value"
+
+Next ws
+   
+            
+End Sub
+
+
+
+
